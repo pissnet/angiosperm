@@ -3,52 +3,59 @@
  * Copyright (C) 2000-2002 Hybrid Development Team
  * Copyright (C) 2002-2005 ircd-ratbox development team
  * Copyright (C) 2005-2006 charybdis development team
+ * Copyright (C) 2022 angiosperm devlopment team
  *
  * See reference.conf for more information.
  */
 
 /* Extensions */
-#loadmodule "extensions/chm_nonotice";
-#loadmodule "extensions/chm_operpeace";
-#loadmodule "extensions/createauthonly";
-#loadmodule "extensions/extb_account";
-#loadmodule "extensions/extb_canjoin";
-#loadmodule "extensions/extb_channel";
-#loadmodule "extensions/extb_combi";
-#loadmodule "extensions/extb_extgecos";
-#loadmodule "extensions/extb_hostmask";
-#loadmodule "extensions/extb_oper";
-#loadmodule "extensions/extb_realname";
-#loadmodule "extensions/extb_server";
-#loadmodule "extensions/extb_ssl";
-#loadmodule "extensions/extb_usermode";
-#loadmodule "extensions/hurt";
-#loadmodule "extensions/m_extendchans";
-#loadmodule "extensions/m_findforwards";
-#loadmodule "extensions/m_identify";
-#loadmodule "extensions/m_locops";
-#loadmodule "extensions/no_oper_invis";
-#loadmodule "extensions/sno_farconnect";
-#loadmodule "extensions/sno_globalnickchange";
-#loadmodule "extensions/sno_globaloper";
-#loadmodule "extensions/override";
-#loadmodule "extensions/no_kill_services";
-
-/*
- * IP cloaking extensions: use ip_cloaking_4.0
- * if you're linking 3.2 and later, otherwise use
- * ip_cloaking, for compatibility with older 3.x
- * releases.
- */
-
-#loadmodule "extensions/ip_cloaking_4.0";
-#loadmodule "extensions/ip_cloaking";
+loadmodule "extensions/cap_id";
+loadmodule "extensions/cap_oper";
+loadmodule "extensions/cap_realhost";
+loadmodule "extensions/chm_adminonly";
+loadmodule "extensions/chm_nonotice";
+loadmodule "extensions/chm_operonly";
+loadmodule "extensions/chm_operpeace";
+loadmodule "extensions/chm_regmsg";
+loadmodule "extensions/chm_sslonly";
+loadmodule "extensions/extb_account";
+loadmodule "extensions/extb_canjoin";
+loadmodule "extensions/extb_channel";
+loadmodule "extensions/extb_combi";
+loadmodule "extensions/extb_extgecos";
+loadmodule "extensions/extb_hostmask";
+loadmodule "extensions/extb_oper";
+loadmodule "extensions/extb_realname";
+loadmodule "extensions/extb_server";
+loadmodule "extensions/extb_ssl";
+loadmodule "extensions/extb_usermode";
+loadmodule "extensions/helpops";
+loadmodule "extensions/invite_notify";
+loadmodule "extensions/m_adminwall";
+loadmodule "extensions/m_extendchans";
+loadmodule "extensions/m_findforwards";
+loadmodule "extensions/m_identify";
+loadmodule "extensions/m_locops";
+loadmodule "extensions/m_mkpasswd";
+loadmodule "extensions/m_ojoin";
+loadmodule "extensions/m_okick";
+loadmodule "extensions/m_omode";
+loadmodule "extensions/m_opme";
+loadmodule "extensions/m_remove";
+loadmodule "extensions/m_sendbans";
+loadmodule "extensions/sno_channelcreate";
+loadmodule "extensions/sno_farconnect";
+loadmodule "extensions/sno_globalnickchange";
+loadmodule "extensions/sno_globaloper";
+loadmodule "extensions/override";
+loadmodule "extensions/umode_noctcp";
+loadmodule "extensions/ip_cloaking_4.0";
 
 serverinfo {
 	name = "hades.arpa";
 	sid = "42X";
 	description = "solanum test server";
-	network_name = "StaticBox";
+	network_name = "pissnet";
 
 	/* On multi-homed hosts you may need the following. These define
 	 * the addresses we connect from to other servers. */
@@ -136,8 +143,8 @@ class "opers" {
 
 class "server" {
 	ping_time = 5 minutes;
-	connectfreq = 5 minutes;
-	max_number = 1;
+	connectfreq = 1 minute;
+	max_number = 10;
 	sendq = 4 megabytes;
 };
 
@@ -147,14 +154,14 @@ listen {
 	 * server replying first, such as BOPM, you should disable this feature.
 	 * otherwise, you probably want to leave it on.
 	 */
-	defer_accept = yes;
+	defer_accept = no;
 
 	/* If you want to listen on a specific IP only, specify host.
 	 * host definitions apply only to the following port line.
 	 */
 	#host = "192.0.2.6";
-	port = 5000, 6665 .. 6669;
-	sslport = 6697;
+	port = 7667;
+	sslport = 7669, 7900;
 
 	/* Listen on IPv6 (if you used host= above). */
 	#host = "2001:db8:2::6";
@@ -232,7 +239,8 @@ auth {
  */
 privset "local_op" {
 	privs = oper:general, oper:privs, oper:testline, oper:kill, oper:operwall, oper:message,
-		usermode:servnotice, auspex:oper, auspex:hostname, auspex:umodes, auspex:cmodes;
+		usermode:servnotice, auspex:oper, auspex:hostname, auspex:umodes, auspex:cmodes,
+		auspex:id, usermode:helpops;
 };
 
 privset "server_bot" {
@@ -244,7 +252,7 @@ privset "global_op" {
 	extends = "local_op";
 	privs = oper:routing, oper:kline, oper:unkline, oper:xline,
 		oper:resv, oper:cmodes, oper:mass_notice, oper:wallops,
-		oper:remoteban;
+		oper:remoteban, oper:override;
 };
 
 privset "admin" {
@@ -328,9 +336,10 @@ connect "ssl.uplink.com" {
 	flags = ssl, topicburst;
 };
 
-service {
-	name = "services.int";
-};
+/* NO GODS. NO SERVICES. */
+#service {
+#	name = "services.int";
+#};
 
 cluster {
 	name = "*";
@@ -353,8 +362,8 @@ channel {
 	use_knock = yes;
 	knock_delay = 5 minutes;
 	knock_delay_channel = 1 minute;
-	max_chans_per_user = 15;
-	max_chans_per_user_large = 60;
+	max_chans_per_user = 240;
+	max_chans_per_user_large = 480;
 	max_bans = 100;
 	max_bans_large = 500;
 	default_split_user_count = 0;
@@ -374,7 +383,7 @@ channel {
 };
 
 serverhide {
-	flatten_links = yes;
+	flatten_links = no;
 	links_delay = 5 minutes;
 	hidden = no;
 	disable_hidden = no;
@@ -543,7 +552,7 @@ general {
 	 * to make use of it, add +h to this option, i.e.:
 	 *	default_umodes = "+ih";
 	 */
-	default_umodes = "+i";
+	default_umodes = "+iwx";
 
 	default_operstring = "is an IRC Operator";
 	default_adminstring = "is a Server Administrator";
