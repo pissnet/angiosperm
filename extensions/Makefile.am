@@ -67,7 +67,8 @@ extension_LTLIBRARIES =		\
   cap_realhost.la		\
   invex_regonly.la		\
   cap_oper.la			\
-  example_module.la
+  example_module.la             \
+  cap_id.la
 
 if HAVE_HYPERSCAN
     extension_LTLIBRARIES += filter.la
