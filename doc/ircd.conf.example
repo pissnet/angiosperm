@@ -155,7 +155,7 @@ listen {
 	 * server replying first, such as BOPM, you should disable this feature.
 	 * otherwise, you probably want to leave it on.
 	 */
-	defer_accept = no;
+	defer_accept = yes;
 
 	/* If you want to listen on a specific IP only, specify host.
 	 * host definitions apply only to the following port line.
@@ -363,8 +363,8 @@ channel {
 	use_knock = yes;
 	knock_delay = 5 minutes;
 	knock_delay_channel = 1 minute;
-	max_chans_per_user = 240;
-	max_chans_per_user_large = 480;
+	max_chans_per_user = 250;
+	max_chans_per_user_large = 500;
 	max_bans = 100;
 	max_bans_large = 500;
 	default_split_user_count = 0;
