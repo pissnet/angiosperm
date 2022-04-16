@@ -47,6 +47,7 @@ extension_LTLIBRARIES =		\
   m_echotags.la			\
   m_extendchans.la		\
   m_findforwards.la		\
+  m_getid.la                    \
   m_identify.la			\
   m_locops.la			\
   m_mkpasswd.la			\
